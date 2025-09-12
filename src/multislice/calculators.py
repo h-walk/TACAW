@@ -145,6 +145,7 @@ class MultisliceCalculator:
         self.lx = lx ; self.ly = ly ; self.lz = lz
         self.nx = nx ; self.ny = ny ; self.nz = nz
         self.dx = xs[1]-xs[0] ; self.dy = ys[1]-ys[0] ; self.dy = ys[1]-ys[0]
+        #print("trajactory grid",nx,"x",ny,"x",nz)
 
         # Set up default probe position if not provided
         if self.probe_positions is None:
@@ -156,7 +157,8 @@ class MultisliceCalculator:
         self.n_probes = len(self.probe_positions)
         
         # Storage: [probe, frame, x, y, layer] - matches WFData expected format
-        self.wavefunction_data = xp.zeros((self.n_probes, self.n_frames, nx, ny, 1), dtype=complex_dtype)
+        #print("create mega zeros array", self.n_probes*self.n_frames*nx*ny*128/8/1024**2,"mb")
+        #self.wavefunction_data = xp.zeros((self.n_probes, self.n_frames, nx, ny, 1), dtype=complex_dtype)
         
     def run(self) -> WFData:
 
@@ -180,8 +182,8 @@ class MultisliceCalculator:
                 frame_idx_result, frame_data, was_cached = _process_frame_worker_torch(args)
                 
                 # Store result
-                for probe_idx in range(self.n_probes):
-                    self.wavefunction_data[probe_idx, frame_idx, :, :, 0] = frame_data[probe_idx, :, :, 0, 0]
+                #for probe_idx in range(self.n_probes):
+                #    self.wavefunction_data[probe_idx, frame_idx, :, :, 0] = frame_data[probe_idx, :, :, 0, 0]
                 
                 if was_cached:
                     frames_cached += 1
@@ -252,6 +254,7 @@ class MultisliceCalculator:
 
 
 def _process_frame_worker_torch(args):
+    #print("processing frame with worker. args: ",*args)
     frame_idx, positions, atom_types, xs, ys, zs, aperture, eV, probe, probe_positions, element_map, cache_file = args
     
     if cache_file.exists():
